@@ -4,18 +4,18 @@
 
 ## 概要
 
-CLI上で使用できる技術記事や技術メモの添削、校正、推敲エージェントサービスです。
-.mdファイルを渡すと、LLMエージェントが内容を分析し、改善された文章を生成します。
+CLI 上で使用できる技術記事や技術メモの添削、校正、推敲エージェントサービスです。
+.md ファイルを渡すと、LLM エージェントが内容を分析し、改善された文章を生成します。
 
 ## 特徴
 
 - **evidence_agent**: 記載されている内容が正しいかどうかをチェック
 - **proofread_agent**: 文章が読みやすいか、誤字脱字がないかをチェック
-- **report_agent**: 2つのエージェントの結果を元に推敲した文章を生成
+- **report_agent**: 2 つのエージェントの結果を元に推敲した文章を生成
 
 ## 技術スタック
 
-- 言語: Python 3.12以上
+- 言語: Python 3.12 以上
 - フレームワーク: LangChain
 - パッケージ管理: uv
 
@@ -40,12 +40,24 @@ uv pip install -e .
 
 ### 基本的な使い方
 
+#### OpenAI API を使用する場合
+
 ```bash
 # OpenAI APIキーを環境変数に設定
 export OPENAI_API_KEY="your-api-key-here"
 
-# マークダウンファイルを処理
+# マークダウンファイルを処理（デフォルト: gpt-4o-mini）
 uv run takumi path/to/your/article.md
+```
+
+#### Google Gemini API を使用する場合
+
+```bash
+# Google Gemini APIキーを環境変数に設定
+export GOOGLE_API_KEY="your-google-api-key-here"
+
+# Geminiを使用してマークダウンファイルを処理
+uv run takumi path/to/your/article.md --provider gemini
 ```
 
 ### オプション
@@ -57,11 +69,15 @@ uv run takumi article.md -o improved_article.md
 # 詳細なフィードバックを表示
 uv run takumi article.md --verbose
 
+# LLMプロバイダーを指定（openai または gemini、デフォルト: openai）
+uv run takumi article.md --provider gemini
+
 # 使用するモデルを指定
-uv run takumi article.md --model gpt-4o
+uv run takumi article.md --model gpt-4o  # OpenAIの場合
+uv run takumi article.md --provider gemini --model gemini-1.5-pro  # Geminiの場合
 
 # APIキーをコマンドラインで指定
-uv run takumi article.md --api-key your-api-key-here
+uv run takumi article.md --api-key your-api-key-here --provider openai
 ```
 
 ### ヘルプ
