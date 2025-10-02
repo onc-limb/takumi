@@ -1,21 +1,28 @@
 """Evidence Agent: Checks if the content in the article is factually correct."""
 
 from typing import Dict, Any
+from pydantic import SecretStr
 from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 
 
 class EvidenceAgent:
     """Agent that checks the factual accuracy of content in markdown files."""
 
-    def __init__(self, api_key: str = None, model: str = "gpt-4o-mini"):
+    def __init__(self, api_key: str | None = None, model: str = "gemini-2.0-flash", provider: str = "gemini"):
         """Initialize the evidence agent.
         
         Args:
-            api_key: OpenAI API key (if None, uses OPENAI_API_KEY env var)
+            api_key: API key (if None, uses OPENAI_API_KEY or GOOGLE_API_KEY env var)
             model: Model to use for checking
+            provider: LLM provider ("openai" or "gemini")
         """
-        self.llm = ChatOpenAI(model=model, api_key=api_key, temperature=0)
+        secret_key = SecretStr(api_key) if api_key else None
+        if provider == "gemini":
+            self.llm = ChatGoogleGenerativeAI(model=model, google_api_key=secret_key, temperature=0)
+        else:
+            self.llm = ChatOpenAI(model=model, api_key=secret_key, temperature=0)
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", """あなたは技術記事の内容をチェックする専門家です。
 与えられた文章の技術的な正確性をチェックし、以下の観点から評価してください：

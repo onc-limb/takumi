@@ -65,7 +65,7 @@ takumi/
 
 - **uv**: パッケージマネージャー・ビルドツール
 - **OpenAI API**: LLM バックエンド（gpt-4o-mini, gpt-4o など）
-- **Google Gemini API**: LLM バックエンド（gemini-1.5-flash, gemini-1.5-pro など）
+- **Google Gemini API**: LLM バックエンド（gemini-2.0-flash, gemini-1.5-pro など）
 
 ### アーキテクチャパターン
 
@@ -225,9 +225,9 @@ uv tree
 #### Google Gemini API
 
 - Google API キーが必須（環境変数 `GOOGLE_API_KEY` またはコマンドラインオプション）
-- デフォルトモデルは`gemini-1.5-flash`（高速・低コスト）
-- `gemini-1.5-pro`等の上位モデルも`--model`オプションで指定可能
-- `--provider gemini`で使用
+- デフォルトモデルは`gemini-2.0-flash`（高速・低コスト）
+- `gemini-1.5-pro`等の他のモデルも`--model`オプションで指定可能
+- `--provider gemini`で使用（デフォルト）
 
 ### 今後の拡張可能性
 

@@ -46,17 +46,20 @@ uv pip install -e .
 # OpenAI APIキーを環境変数に設定
 export OPENAI_API_KEY="your-api-key-here"
 
-# マークダウンファイルを処理（デフォルト: gpt-4o-mini）
-uv run takumi path/to/your/article.md
+# マークダウンファイルを処理（デフォルトモデル: gpt-4o-mini）
+uv run takumi path/to/your/article.md --provider openai
 ```
 
-#### Google Gemini API を使用する場合
+#### Google Gemini API を使用する場合（デフォルト）
 
 ```bash
 # Google Gemini APIキーを環境変数に設定
 export GOOGLE_API_KEY="your-google-api-key-here"
 
-# Geminiを使用してマークダウンファイルを処理
+# Geminiを使用してマークダウンファイルを処理（デフォルトモデル: gemini-2.0-flash）
+uv run takumi path/to/your/article.md
+
+# または明示的に指定
 uv run takumi path/to/your/article.md --provider gemini
 ```
 
@@ -69,12 +72,12 @@ uv run takumi article.md -o improved_article.md
 # 詳細なフィードバックを表示
 uv run takumi article.md --verbose
 
-# LLMプロバイダーを指定（openai または gemini、デフォルト: openai）
+# LLMプロバイダーを指定（openai または gemini、デフォルト: gemini）
 uv run takumi article.md --provider gemini
 
 # 使用するモデルを指定
-uv run takumi article.md --model gpt-4o  # OpenAIの場合
-uv run takumi article.md --provider gemini --model gemini-1.5-pro  # Geminiの場合
+uv run takumi article.md --provider openai --model gpt-4o  # OpenAIの場合（デフォルト: gpt-4o-mini）
+uv run takumi article.md --provider gemini --model gemini-1.5-pro  # Geminiの場合（デフォルト: gemini-2.0-flash）
 
 # APIキーをコマンドラインで指定
 uv run takumi article.md --api-key your-api-key-here --provider openai

@@ -20,13 +20,17 @@ from .report_agent import ReportAgent
 )
 @click.option(
     '--api-key',
-    envvar='OPENAI_API_KEY',
-    help='OpenAI API key (can also be set via OPENAI_API_KEY env var)'
+    help='API key for the LLM provider (can also be set via OPENAI_API_KEY or GOOGLE_API_KEY env var)'
+)
+@click.option(
+    '--provider',
+    type=click.Choice(['openai', 'gemini'], case_sensitive=False),
+    default='gemini',
+    help='LLM provider to use (default: gemini)'
 )
 @click.option(
     '--model',
-    default='gpt-4o-mini',
-    help='OpenAI model to use (default: gpt-4o-mini)'
+    help='Model to use. Defaults: gemini-2.0-flash (Gemini), gpt-4o-mini (OpenAI)'
 )
 @click.option(
     '--verbose', '-v',
@@ -37,7 +41,8 @@ def main(
     input_file: Path,
     output: Optional[Path],
     api_key: Optional[str],
-    model: str,
+    provider: str,
+    model: Optional[str],
     verbose: bool
 ):
     """Takumi - Technical Article Proofreading Agent Service.
@@ -47,10 +52,22 @@ def main(
     
     INPUT_FILE: Path to the markdown file to process
     """
-    # Check if API key is available
+    # Set default model based on provider if not specified
+    if model is None:
+        model = "gemini-2.0-flash" if provider == "gemini" else "gpt-4o-mini"
+    
+    # Get API key from environment if not provided
     if not api_key:
-        click.echo("Error: OpenAI API key is required. Set OPENAI_API_KEY environment variable or use --api-key option.", err=True)
-        sys.exit(1)
+        if provider == "gemini":
+            api_key = os.environ.get('GOOGLE_API_KEY')
+            if not api_key:
+                click.echo("Error: Google API key is required. Set GOOGLE_API_KEY environment variable or use --api-key option.", err=True)
+                sys.exit(1)
+        else:
+            api_key = os.environ.get('OPENAI_API_KEY')
+            if not api_key:
+                click.echo("Error: OpenAI API key is required. Set OPENAI_API_KEY environment variable or use --api-key option.", err=True)
+                sys.exit(1)
     
     # Read input file
     click.echo(f"📖 Reading file: {input_file}")
@@ -66,10 +83,10 @@ def main(
         sys.exit(1)
     
     # Initialize agents
-    click.echo("🤖 Initializing agents...")
-    evidence_agent = EvidenceAgent(api_key=api_key, model=model)
-    proofread_agent = ProofreadAgent(api_key=api_key, model=model)
-    report_agent = ReportAgent(api_key=api_key, model=model)
+    click.echo(f"🤖 Initializing agents with {provider} ({model})...")
+    evidence_agent = EvidenceAgent(api_key=api_key, model=model, provider=provider)
+    proofread_agent = ProofreadAgent(api_key=api_key, model=model, provider=provider)
+    report_agent = ReportAgent(api_key=api_key, model=model, provider=provider)
     
     # Run evidence check
     click.echo("🔍 Checking factual accuracy...")

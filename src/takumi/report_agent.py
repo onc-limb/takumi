@@ -1,21 +1,28 @@
 """Report Agent: Generates a refined version of the article based on feedback."""
 
 from typing import Dict, Any, List
+from pydantic import SecretStr
 from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 
 
 class ReportAgent:
     """Agent that generates an improved version of the article based on feedback."""
 
-    def __init__(self, api_key: str = None, model: str = "gpt-4o-mini"):
+    def __init__(self, api_key: str | None = None, model: str = "gemini-2.0-flash", provider: str = "gemini"):
         """Initialize the report agent.
         
         Args:
-            api_key: OpenAI API key (if None, uses OPENAI_API_KEY env var)
+            api_key: API key (if None, uses OPENAI_API_KEY or GOOGLE_API_KEY env var)
             model: Model to use for generating report
+            provider: LLM provider ("openai" or "gemini")
         """
-        self.llm = ChatOpenAI(model=model, api_key=api_key, temperature=0.3)
+        secret_key = SecretStr(api_key) if api_key else None
+        if provider == "gemini":
+            self.llm = ChatGoogleGenerativeAI(model=model, google_api_key=secret_key, temperature=0.3)
+        else:
+            self.llm = ChatOpenAI(model=model, api_key=secret_key, temperature=0.3)
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", """あなたは技術記事を推敲する専門家です。
 元の記事と、各エージェントからのフィードバックを元に、改善された記事を作成してください。
@@ -68,7 +75,12 @@ class ReportAgent:
             "proofread_feedback": proofread_result["result"]
         })
         
-        return response.content
+        # response.contentはstr | list[str | dict]の可能性があるため、strに変換
+        content = response.content
+        if isinstance(content, list):
+            # リストの場合は文字列要素を結合
+            return "".join(str(item) for item in content if isinstance(item, str))
+        return str(content)
 
     def save_report(self, content: str, output_path: str) -> None:
         """Save the improved content to a file.

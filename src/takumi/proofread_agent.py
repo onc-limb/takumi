@@ -1,21 +1,28 @@
 """Proofread Agent: Checks readability and grammar of the article."""
 
 from typing import Dict, Any
+from pydantic import SecretStr
 from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 
 
 class ProofreadAgent:
     """Agent that checks readability and grammar of markdown content."""
 
-    def __init__(self, api_key: str = None, model: str = "gpt-4o-mini"):
+    def __init__(self, api_key: str | None = None, model: str = "gemini-2.0-flash", provider: str = "gemini"):
         """Initialize the proofread agent.
         
         Args:
-            api_key: OpenAI API key (if None, uses OPENAI_API_KEY env var)
+            api_key: API key (if None, uses OPENAI_API_KEY or GOOGLE_API_KEY env var)
             model: Model to use for proofreading
+            provider: LLM provider ("openai" or "gemini")
         """
-        self.llm = ChatOpenAI(model=model, api_key=api_key, temperature=0)
+        secret_key = SecretStr(api_key) if api_key else None
+        if provider == "gemini":
+            self.llm = ChatGoogleGenerativeAI(model=model, google_api_key=secret_key, temperature=0)
+        else:
+            self.llm = ChatOpenAI(model=model, api_key=secret_key, temperature=0)
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", """あなたは技術記事の文章を校正する専門家です。
 与えられた文章を以下の観点からチェックしてください：
